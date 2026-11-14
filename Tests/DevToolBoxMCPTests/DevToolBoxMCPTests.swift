@@ -111,6 +111,15 @@ struct MCPServerTests {
         #expect(try toolText(call).contains(".devtoolboxmcp/config.json"))
     }
 
+    @Test func deltaEIsRoundedToTwoDecimalsInJSON() throws {
+        let reply = try send(makeServer(), """
+        {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"find_nearest_color","arguments":{"hex":"#0261A5"}}}
+        """)
+        let text = try toolText(reply)
+        let pattern = #""deltaE" *: *(\d+(\.\d{1,2})?)[,\s}]"#
+        #expect(text.range(of: pattern, options: .regularExpression) != nil, "got \(text)")
+    }
+
     @Test func notificationsGetNoReply() throws {
         let reply = try send(makeServer(), """
         {"jsonrpc":"2.0","method":"notifications/initialized"}

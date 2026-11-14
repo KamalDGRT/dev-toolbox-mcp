@@ -69,7 +69,7 @@ public struct FindNearestColorTool: Sendable {
             [
                 "name": match.asset.name,
                 "hex": match.asset.color.hexString,
-                "deltaE": (match.deltaE * 100).rounded() / 100,
+                "deltaE": Self.roundedDeltaE(match.deltaE),
                 "exact": match.isExact,
                 "alpha": match.asset.color.alpha,
                 "catalog": match.asset.catalogName,
@@ -85,6 +85,16 @@ public struct FindNearestColorTool: Sendable {
             options: [.prettyPrinted, .sortedKeys]
         )
         return String(decoding: data, as: UTF8.self)
+    }
+
+    private static let deltaEDecimalPlaces = 2
+
+    /// Decimal (not Double) so JSON prints `0.35`, not `0.34999999999999998`.
+    static func roundedDeltaE(_ value: Double) -> NSDecimalNumber {
+        var source = Decimal(value)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &source, deltaEDecimalPlaces, .plain)
+        return NSDecimalNumber(decimal: rounded)
     }
 
     static func targetColor(from arguments: [String: Any]) throws -> SRGBColor {
