@@ -93,6 +93,24 @@ struct MCPServerTests {
         #expect((result["capabilities"] as? [String: Any])?["tools"] != nil)
     }
 
+    @Test func missingConfigDoesNotStopServerAndIsReportedPerCall() throws {
+        let empty = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+        let server = MCPServer(tool: FindNearestColorTool(loadConfig: {
+            try ServerConfig.load(environment: [:], currentDirectory: empty)
+        }))
+        let initialize = try send(server, """
+        {"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}
+        """)
+        #expect(initialize?["result"] != nil, "server must start without config")
+        let call = try send(server, """
+        {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"find_nearest_color","arguments":{"hex":"#FFFFFF"}}}
+        """)
+        let result = try #require(call?["result"] as? [String: Any])
+        #expect(result["isError"] as? Bool == true)
+        #expect(try toolText(call).contains(".devtoolboxmcp/config.json"))
+    }
+
     @Test func notificationsGetNoReply() throws {
         let reply = try send(makeServer(), """
         {"jsonrpc":"2.0","method":"notifications/initialized"}

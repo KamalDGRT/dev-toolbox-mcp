@@ -22,10 +22,16 @@ public enum ToolError: Error, Equatable, LocalizedError {
 public struct FindNearestColorTool: Sendable {
     public static let name = "find_nearest_color"
 
-    public let config: ServerConfig
+    /// Resolved on every call so a missing config surfaces as a tool error
+    /// (the server still starts) and config edits apply without a restart.
+    public let loadConfig: @Sendable () throws -> ServerConfig
+
+    public init(loadConfig: @escaping @Sendable () throws -> ServerConfig) {
+        self.loadConfig = loadConfig
+    }
 
     public init(config: ServerConfig) {
-        self.config = config
+        self.init(loadConfig: { config })
     }
 
     public static var definition: [String: Any] { [
@@ -49,6 +55,7 @@ public struct FindNearestColorTool: Sendable {
     /// Returns pretty JSON text listing matches, closest first.
     public func run(arguments: [String: Any]) throws -> String {
         let target = try Self.targetColor(from: arguments)
+        let config = try loadConfig()
         let limit = (arguments["limit"] as? Int).map { max($0, 1) }
             ?? config.maxResults
         var assets: [ColorAsset] = []

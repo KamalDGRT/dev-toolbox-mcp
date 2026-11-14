@@ -3,7 +3,7 @@ import Foundation
 /// Minimal MCP server over newline-delimited JSON-RPC (stdio transport).
 public struct MCPServer: Sendable {
     public static let serverName = "dev-toolbox-mcp"
-    public static let serverVersion = "0.1.0"
+    public static let serverVersion = "0.2.1"
     static let fallbackProtocolVersion = "2025-03-26"
 
     private enum ErrorCode {
