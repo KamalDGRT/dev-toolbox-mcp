@@ -52,7 +52,8 @@ public struct ServerConfig: Equatable, Sendable {
             if FileManager.default.fileExists(atPath: candidate.path) {
                 return try load(fileURL: candidate)
             }
-            let parent = directory.deletingLastPathComponent()
+            // standardize: "/".deletingLastPathComponent() is "/.." on newer Foundation, never equal to "/"
+            let parent = directory.deletingLastPathComponent().standardizedFileURL
             guard parent.path != directory.path else {
                 throw ServerConfigError.notFound(searchedFrom: currentDirectory.path)
             }
