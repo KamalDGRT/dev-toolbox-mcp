@@ -1,0 +1,15 @@
+{
+  "originHash" : "9d4cc5ee3f37f6b44fbe4487e52d784ec97e7074ac59c6d76ebb576a64bdd773",
+  "pins" : [
+    {
+      "identity" : "devtoolboxcore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/KamalDGRT/DevToolBoxCore.git",
+      "state" : {
+        "revision" : "180b68675d673c25477e253c4b1a8971a2002e1e",
+        "version" : "0.2.0"
+      }
+    }
+  ],
+  "version" : 3
+}
