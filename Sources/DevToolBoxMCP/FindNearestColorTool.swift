@@ -81,9 +81,9 @@ public struct FindNearestColorTool: Sendable {
         return String(decoding: data, as: UTF8.self)
     }
 
-    static func targetColor(from arguments: [String: Any]) throws -> RGBColor {
+    static func targetColor(from arguments: [String: Any]) throws -> SRGBColor {
         if let hex = arguments["hex"] as? String {
-            guard let color = RGBColor(hex: hex) else {
+            guard let color = SRGBColor(hex: hex) else {
                 throw ToolError.invalidHex(hex)
             }
             return color
@@ -98,6 +98,6 @@ public struct FindNearestColorTool: Sendable {
               [red, green, blue].allSatisfy(byteRange.contains) else {
             throw ToolError.invalidRGB
         }
-        return RGBColor(redByte: red, greenByte: green, blueByte: blue)
+        return SRGBColor(redByte: red, greenByte: green, blueByte: blue)
     }
 }
