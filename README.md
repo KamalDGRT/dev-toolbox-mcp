@@ -47,6 +47,7 @@ version whenever you need new Core API. Release: `git tag vX.Y.Z && git push ori
 
 | Version | Notes |
 |---|---|
+| 0.2.2 | `deltaE` in tool output rounded to two decimals (was `0.34999999999999998`). |
 | 0.2.1 | Fix: server no longer exits when no config is found (`CONNECTION_CLOSED` in `claude mcp list`); the error is returned by the tool call instead. Config is read per call, so edits apply without a restart. |
 | 0.2.0 | Depends on DevToolBoxCore 0.2.0 (hex shorthand/alpha, shared byte validation). Fix: config search no longer loops forever at filesystem root. |
 | 0.1.0 | Initial `find_nearest_color` tool. |
