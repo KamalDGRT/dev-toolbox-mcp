@@ -3,7 +3,7 @@ import Foundation
 /// Minimal MCP server over newline-delimited JSON-RPC (stdio transport).
 public struct MCPServer: Sendable {
     public static let serverName = "dev-toolbox-mcp"
-    public static let serverVersion = "0.2.2"
+    public static let serverVersion = "0.3.0"
     static let fallbackProtocolVersion = "2025-03-26"
 
     private enum ErrorCode {
@@ -12,10 +12,23 @@ public struct MCPServer: Sendable {
         static let invalidParams = -32602
     }
 
-    private let tool: FindNearestColorTool
+    private let tools: [any MCPTool]
 
-    public init(tool: FindNearestColorTool) {
-        self.tool = tool
+    public init(tools: [any MCPTool]) {
+        self.tools = tools
+    }
+
+    /// Every tool this server ships, wired to the per-call config loader.
+    public static func standard(
+        loadConfig: @escaping @Sendable () throws -> ServerConfig
+    ) -> MCPServer {
+        MCPServer(tools: [
+            FindNearestColorTool(loadConfig: loadConfig),
+            SearchAssetsTool(loadConfig: loadConfig),
+            FindDuplicateColorsTool(loadConfig: loadConfig),
+            CompareColorsTool(),
+            RGBAToRGBTool()
+        ])
     }
 
     /// Handles one JSON-RPC message; returns the response, or nil for
@@ -43,7 +56,7 @@ public struct MCPServer: Sendable {
             return encode(result: [String: Any](), id: id)
         case "tools/list":
             return encode(
-                result: ["tools": [FindNearestColorTool.definition]],
+                result: ["tools": tools.map { type(of: $0).definition }],
                 id: id
             )
         case "tools/call":
@@ -56,7 +69,9 @@ public struct MCPServer: Sendable {
     }
 
     private func callTool(params: [String: Any], id: Any) -> Data? {
-        guard params["name"] as? String == FindNearestColorTool.name else {
+        guard let tool = tools.first(where: {
+            type(of: $0).name == params["name"] as? String
+        }) else {
             return encode(
                 error: ErrorCode.invalidParams, "Unknown tool", id: id
             )

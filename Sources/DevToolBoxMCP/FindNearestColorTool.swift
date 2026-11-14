@@ -1,25 +1,8 @@
 import DevToolBoxCore
 import Foundation
 
-public enum ToolError: Error, Equatable, LocalizedError {
-    case missingColor
-    case invalidHex(String)
-    case invalidRGB
-
-    public var errorDescription: String? {
-        switch self {
-        case .missingColor:
-            return "Provide either `hex` (e.g. \"#F26522\") or all of `r`, `g`, `b`."
-        case .invalidHex(let value):
-            return "Invalid hex \"\(value)\"; expected #RGB, #RGBA, #RRGGBB or #RRGGBBAA."
-        case .invalidRGB:
-            return "r, g, b must be integers between 0 and 255."
-        }
-    }
-}
-
 /// `find_nearest_color`: maps a hex/RGB value to the closest color assets.
-public struct FindNearestColorTool: Sendable {
+public struct FindNearestColorTool: MCPTool {
     public static let name = "find_nearest_color"
 
     /// Resolved on every call so a missing config surfaces as a tool error
@@ -58,43 +41,19 @@ public struct FindNearestColorTool: Sendable {
         let config = try loadConfig()
         let limit = (arguments["limit"] as? Int).map { max($0, 1) }
             ?? config.maxResults
-        var assets: [ColorAsset] = []
-        for catalogURL in config.catalogURLs {
-            assets += try ColorAssetCatalog.load(from: catalogURL)
-        }
         let matches = NearestColorFinder.nearest(
-            to: target, in: assets, limit: limit
+            to: target, in: try config.loadAssets(), limit: limit
         )
         let rows: [[String: Any]] = matches.map { match in
-            [
-                "name": match.asset.name,
-                "hex": match.asset.color.hexString,
-                "deltaE": Self.roundedDeltaE(match.deltaE),
-                "exact": match.isExact,
-                "alpha": match.asset.color.alpha,
-                "catalog": match.asset.catalogName,
-                "folder": match.asset.folderPath
-            ]
+            ToolJSON.row(match.asset).merging([
+                "deltaE": ToolJSON.roundedDeltaE(match.deltaE),
+                "exact": match.isExact
+            ]) { $1 }
         }
-        let payload: [String: Any] = [
+        return try ToolJSON.pretty([
             "query": target.hexString,
             "matches": rows
-        ]
-        let data = try JSONSerialization.data(
-            withJSONObject: payload,
-            options: [.prettyPrinted, .sortedKeys]
-        )
-        return String(decoding: data, as: UTF8.self)
-    }
-
-    private static let deltaEDecimalPlaces = 2
-
-    /// Decimal (not Double) so JSON prints `0.35`, not `0.34999999999999998`.
-    static func roundedDeltaE(_ value: Double) -> NSDecimalNumber {
-        var source = Decimal(value)
-        var rounded = Decimal()
-        NSDecimalRound(&rounded, &source, deltaEDecimalPlaces, .plain)
-        return NSDecimalNumber(decimal: rounded)
+        ])
     }
 
     static func targetColor(from arguments: [String: Any]) throws -> SRGBColor {

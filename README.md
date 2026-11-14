@@ -8,7 +8,13 @@ uses [DevToolBoxCore](https://github.com/KamalDGRT/DevToolBoxCore), the same pac
 
 | Tool | Input | Output |
 |---|---|---|
-| `find_nearest_color` | `hex` (`#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`) **or** `r`,`g`,`b` (0-255) | Closest `.colorset` assets by CIE76 ΔE (`< 1` = exact). |
+| `find_nearest_color` | `hex` (`#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`) **or** `r`,`g`,`b` (0-255), optional `limit` | Closest `.colorset` assets by CIE76 ΔE (`< 1` = exact, so the asset name replaces a hardcoded hex). |
+| `search_assets` | `query` (name, hex, RGB or folder substring), optional `limit` (default 50) | Matching assets with name, hex, rgb, alpha, catalog, folder. |
+| `find_duplicate_colors` | none | Groups of assets that share the same hex. |
+| `compare_colors` | `a`, `b`: each a hex string or `{r,g,b,a?}` | ΔE between the two, and whether they are identical (`< 1`). |
+| `rgba_to_rgb` | `color` (hex incl. alpha or `{r,g,b,a}`), optional `background` (`white` default, `black`, hex, `{r,g,b}`) | Flattened hex and rgb. |
+
+`compare_colors` and `rgba_to_rgb` need no config; the asset tools read `.devtoolboxmcp/config.json`.
 
 ## Setup
 
@@ -47,6 +53,7 @@ version whenever you need new Core API. Release: `git tag vX.Y.Z && git push ori
 
 | Version | Notes |
 |---|---|
+| 0.3.0 | New tools: `search_assets`, `find_duplicate_colors`, `compare_colors`, `rgba_to_rgb`. Depends on DevToolBoxCore 0.3.0. |
 | 0.2.2 | `deltaE` in tool output rounded to two decimals (was `0.34999999999999998`). |
 | 0.2.1 | Fix: server no longer exits when no config is found (`CONNECTION_CLOSED` in `claude mcp list`); the error is returned by the tool call instead. Config is read per call, so edits apply without a restart. |
 | 0.2.0 | Depends on DevToolBoxCore 0.2.0 (hex shorthand/alpha, shared byte validation). Fix: config search no longer loops forever at filesystem root. |

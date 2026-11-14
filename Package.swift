@@ -5,7 +5,7 @@ let package = Package(
     name: "dev-toolbox-mcp",
     platforms: [.macOS(.v13)],
     dependencies: [
-        .package(url: "https://github.com/KamalDGRT/DevToolBoxCore.git", from: "0.2.0")
+        .package(url: "https://github.com/KamalDGRT/DevToolBoxCore.git", from: "0.3.0")
     ],
     targets: [
         .target(
