@@ -27,7 +27,9 @@ uses [DevToolBoxCore](https://github.com/KamalDGRT/DevToolBoxCore), the same pac
    ```bash
    claude mcp add dev-toolbox -- /path/to/dev-toolbox-mcp/.build/release/dev-toolbox-mcp
    ```
-   Run it from (or below) the project that holds the config.
+   Use `--scope user` to register it for every project. Claude Code starts the server in the project's
+   directory, so each project uses its own config. Projects without one get a clear error from the tool call;
+   the server itself still connects.
 
 ## Develop
 
@@ -45,5 +47,6 @@ version whenever you need new Core API. Release: `git tag vX.Y.Z && git push ori
 
 | Version | Notes |
 |---|---|
+| 0.2.1 | Fix: server no longer exits when no config is found (`CONNECTION_CLOSED` in `claude mcp list`); the error is returned by the tool call instead. Config is read per call, so edits apply without a restart. |
 | 0.2.0 | Depends on DevToolBoxCore 0.2.0 (hex shorthand/alpha, shared byte validation). Fix: config search no longer loops forever at filesystem root. |
 | 0.1.0 | Initial `find_nearest_color` tool. |
