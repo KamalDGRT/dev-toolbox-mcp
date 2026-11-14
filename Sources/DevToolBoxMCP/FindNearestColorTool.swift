@@ -11,7 +11,7 @@ public enum ToolError: Error, Equatable, LocalizedError {
         case .missingColor:
             return "Provide either `hex` (e.g. \"#F26522\") or all of `r`, `g`, `b`."
         case .invalidHex(let value):
-            return "Invalid hex \"\(value)\"; expected #RRGGBB."
+            return "Invalid hex \"\(value)\"; expected #RGB, #RGBA, #RRGGBB or #RRGGBBAA."
         case .invalidRGB:
             return "r, g, b must be integers between 0 and 255."
         }
@@ -21,7 +21,6 @@ public enum ToolError: Error, Equatable, LocalizedError {
 /// `find_nearest_color`: maps a hex/RGB value to the closest color assets.
 public struct FindNearestColorTool: Sendable {
     public static let name = "find_nearest_color"
-    private static let byteRange = 0...255
 
     public let config: ServerConfig
 
@@ -37,7 +36,7 @@ public struct FindNearestColorTool: Sendable {
         "inputSchema": [
             "type": "object",
             "properties": [
-                "hex": ["type": "string", "description": "#RRGGBB or RRGGBB"],
+                "hex": ["type": "string", "description": "#RGB, #RGBA, #RRGGBB or #RRGGBBAA (hash optional)"],
                 "r": ["type": "integer", "minimum": 0, "maximum": 255],
                 "g": ["type": "integer", "minimum": 0, "maximum": 255],
                 "b": ["type": "integer", "minimum": 0, "maximum": 255],
@@ -95,9 +94,9 @@ public struct FindNearestColorTool: Sendable {
         guard let red = arguments["r"] as? Int,
               let green = arguments["g"] as? Int,
               let blue = arguments["b"] as? Int,
-              [red, green, blue].allSatisfy(byteRange.contains) else {
+              let color = SRGBColor(redByte: red, greenByte: green, blueByte: blue) else {
             throw ToolError.invalidRGB
         }
-        return SRGBColor(redByte: red, greenByte: green, blueByte: blue)
+        return color
     }
 }
